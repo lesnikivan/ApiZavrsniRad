@@ -3,7 +3,7 @@
     "description": "Backend API for AI plant identification, history storage, and Trello task creation.",
     "type": "project",
     "require": {
-        "php": "^7.4 || ^8.0",
+        "php": "^8.2",
         "slim/slim": "^4.0",
         "slim/psr7": "^1.0",
         "monolog/monolog": "^2.0",
