@@ -103,39 +103,48 @@ class AIPlantAnalyzer
 
     private function postJson(string $url, array $payload): array
     {
-        $context = stream_context_create([
-            'http' => [
-                'method' => 'POST',
-                'header' => "Content-Type: application/json\r\n",
-                'content' => json_encode($payload),
-                'ignore_errors' => true,
-                'timeout' => 45,
-            ],
-        ]);
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            $context = stream_context_create([
+                'http' => [
+                    'method' => 'POST',
+                    'header' => "Content-Type: application/json\r\n",
+                    'content' => json_encode($payload),
+                    'ignore_errors' => true,
+                    'timeout' => 45,
+                ],
+            ]);
 
-        $body = file_get_contents($url, false, $context);
+            $body = file_get_contents($url, false, $context);
 
-        if ($body === false) {
-            throw new \RuntimeException('Gemini API request failed.');
-        }
+            if ($body === false) {
+                throw new \RuntimeException('Gemini API request failed.');
+            }
 
-        $decoded = json_decode($body, true);
+            $decoded = json_decode($body, true);
 
-        if (!is_array($decoded)) {
-            throw new \RuntimeException('Gemini API returned invalid JSON.');
-        }
+            if (!is_array($decoded)) {
+                throw new \RuntimeException('Gemini API returned invalid JSON.');
+            }
 
-        $statusLine = $http_response_header[0] ?? '';
-        preg_match('/\s(\d{3})\s/', $statusLine, $statusMatch);
-        $statusCode = isset($statusMatch[1]) ? (int)$statusMatch[1] : 0;
+            $statusLine = $http_response_header[0] ?? '';
+            preg_match('/\s(\d{3})\s/', $statusLine, $statusMatch);
+            $statusCode = isset($statusMatch[1]) ? (int)$statusMatch[1] : 0;
 
-        if ($statusCode >= 400 || isset($decoded['error'])) {
+            if ($statusCode < 400 && !isset($decoded['error'])) {
+                return $decoded;
+            }
+
             $message = $decoded['error']['message'] ?? 'Gemini API request failed.';
+            $isTransient = in_array($statusCode, [429, 500, 502, 503, 504], true);
 
-            throw new \RuntimeException(sprintf('Gemini API error (%d): %s', $statusCode, $message));
+            if (!$isTransient || $attempt === 2) {
+                throw new \RuntimeException(sprintf('Gemini API error (%d): %s', $statusCode, $message));
+            }
+
+            sleep($attempt + 1);
         }
 
-        return $decoded;
+        throw new \RuntimeException('Gemini API request failed after retries.');
     }
 
     private function demoAnalysis(string $imageUri): array
