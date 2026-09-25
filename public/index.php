@@ -17,8 +17,8 @@ $app->add(function ($request, $handler) {
 
     return $response
         ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Key')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
 });
 
 $app->options('/{routes:.+}', function ($request, $response) {

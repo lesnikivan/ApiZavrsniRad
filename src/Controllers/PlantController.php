@@ -3,25 +3,25 @@
 namespace App\Controllers;
 
 use App\Models\PlantAnalysisRepository;
-use App\Services\AIPlantAnalyzer;
-use App\Services\TrelloService;
+use App\Models\WorkflowRepository;
+use App\Services\Orchestrator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 class PlantController
 {
-    private AIPlantAnalyzer $analyzer;
-    private TrelloService $trello;
+    private Orchestrator $orchestrator;
     private PlantAnalysisRepository $repository;
+    private WorkflowRepository $workflowRepository;
 
     public function __construct(
-        AIPlantAnalyzer $analyzer,
-        TrelloService $trello,
-        PlantAnalysisRepository $repository
+        Orchestrator $orchestrator,
+        PlantAnalysisRepository $repository,
+        WorkflowRepository $workflowRepository
     ) {
-        $this->analyzer = $analyzer;
-        $this->trello = $trello;
+        $this->orchestrator = $orchestrator;
         $this->repository = $repository;
+        $this->workflowRepository = $workflowRepository;
     }
 
     public function health(Request $request, Response $response): Response
@@ -46,15 +46,12 @@ class PlantController
         }
 
         try {
-            $analysis = $this->analyzer->analyze($imageBase64, $mimeType, $imageUri);
+            $analysis = $this->orchestrator->run($imageBase64, $mimeType, $imageUri);
         } catch (\Throwable $exception) {
             return $this->json($response, [
                 'error' => $exception->getMessage(),
             ], 502);
         }
-
-        $analysis = $this->trello->createCards($analysis);
-        $analysis = $this->repository->save($analysis);
 
         return $this->json($response, $analysis, 201);
     }
@@ -62,6 +59,11 @@ class PlantController
     public function history(Request $request, Response $response): Response
     {
         return $this->json($response, $this->repository->all());
+    }
+
+    public function workflowRuns(Request $request, Response $response): Response
+    {
+        return $this->json($response, $this->workflowRepository->runs());
     }
 
     private function json(Response $response, array $data, int $status = 200): Response

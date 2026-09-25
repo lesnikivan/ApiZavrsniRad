@@ -20,11 +20,17 @@ class AIPlantAnalyzer
         }
 
         $prompt = implode("\n", [
-            'Identificiraj biljku na fotografiji.',
-            'Vrati iskljucivo JSON bez markdowna u ovom obliku:',
+            'Analiziraj fotografiju i identificiraj biljku što preciznije.',
+            'Na temelju identificirane biljke generiraj točno 4 konkretna zadatka njege.',
+            'Zadaci moraju biti specifični za tu biljku, a ne opći savjeti koji vrijede za sve biljke.',
+            'Svaki zadatak mora sadržavati radnju, mjerljiv uvjet ili količinu kada je moguće, te realnu učestalost.',
+            'Uključi različite vrste njege kada su relevantne: zalijevanje, svjetlo ili premještanje, prihrana, rezidba, čišćenje, presađivanje ili kontrola štetnika.',
+            'Primjer lošeg zadatka: Provjeri stanje biljke. Primjer dobrog zadatka: Zalij Monsteru kada se osuši gornjih 3-5 cm supstrata, otprilike svakih 7-10 dana.',
+            'Ako identifikacija nije sigurna, jasno navedi nesigurnost u summaryju i prilagodi zadatke najvjerojatnijoj biljci.',
+            'Vrati iskljucivo valjani JSON bez markdowna u ovom obliku:',
             '{"plantName":"...","scientificName":"...","confidence":0.85,"summary":"...","tasks":[{"title":"...","description":"...","frequency":"..."}]}',
-            'Zadaci trebaju biti konkretne radnje njege biljke prikladne za Trello kartice.',
-            'Odgovori na hrvatskom jeziku.'
+            'Naslovi zadataka neka budu kratki i prikladni za Trello kartice.',
+            'Odgovori na hrvatskom jeziku i nemoj izmišljati precizne podatke ako ih nije moguće pouzdano procijeniti.'
         ]);
 
         $payload = [
