@@ -40,6 +40,7 @@ The API runs on `http://localhost:8000`.
 - `POST /analyze-plant`: receives `{ imageUri, imageBase64, mimeType }`, analyzes the plant, creates Trello cards if configured, and saves the analysis.
 - `GET /plants`: returns saved analysis history.
 - `GET /admin/services`: lists orchestration services. Requires `X-Admin-Key`.
+- `GET /admin/status`: checks the Railway database connection and required workflow tables. Requires `X-Admin-Key`.
 - `PUT /admin/services/{serviceKey}`: enables or disables a service. Body: `{ "enabled": true }`.
 - `GET /admin/workflows`: lists workflows and their ordered steps. Requires `X-Admin-Key`.
 - `PUT /admin/workflows/{workflowId}/steps`: replaces the step order. Requires `X-Admin-Key`.

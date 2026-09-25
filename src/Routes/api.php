@@ -44,6 +44,7 @@ $app->get('/health', [$controller, 'health']);
 $app->post('/analyze-plant', [$controller, 'analyze']);
 $app->get('/plants', [$controller, 'history']);
 $app->get('/admin/services', [$adminController, 'services']);
+$app->get('/admin/status', [$adminController, 'status']);
 $app->put('/admin/services/{serviceKey}', [$adminController, 'enableService']);
 $app->get('/admin/workflows', [$adminController, 'workflows']);
 $app->put('/admin/workflows/{workflowId}/steps', [$adminController, 'updateSteps']);

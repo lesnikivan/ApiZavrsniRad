@@ -26,6 +26,15 @@ class AdminController
         return $this->json($response, $this->workflowRepository->services());
     }
 
+    public function status(Request $request, Response $response): Response
+    {
+        if (($unauthorized = $this->authorize($request, $response)) !== null) {
+            return $unauthorized;
+        }
+
+        return $this->json($response, $this->workflowRepository->status());
+    }
+
     public function enableService(Request $request, Response $response): Response
     {
         if (($unauthorized = $this->authorize($request, $response)) !== null) {

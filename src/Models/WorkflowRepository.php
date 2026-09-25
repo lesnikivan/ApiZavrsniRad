@@ -33,7 +33,7 @@ class WorkflowRepository
 
             return $statement->fetchAll();
         } catch (PDOException $exception) {
-            return [];
+            throw new PDOException('Unable to load active workflow steps: ' . $exception->getMessage(), 0, $exception);
         }
     }
 
@@ -56,7 +56,7 @@ class WorkflowRepository
 
             return $runId;
         } catch (PDOException $exception) {
-            return null;
+            throw new PDOException('Unable to start workflow run: ' . $exception->getMessage(), 0, $exception);
         }
     }
 
@@ -76,6 +76,7 @@ class WorkflowRepository
                 'error_message' => $errorMessage,
             ]);
         } catch (PDOException $exception) {
+            error_log('Unable to finish workflow run: ' . $exception->getMessage());
         }
     }
 
@@ -112,6 +113,7 @@ class WorkflowRepository
                 'message' => $message,
             ]);
         } catch (PDOException $exception) {
+            error_log('Unable to write workflow step log: ' . $exception->getMessage());
         }
     }
 
@@ -128,7 +130,7 @@ class WorkflowRepository
 
             return $statement->fetchAll();
         } catch (PDOException $exception) {
-            return [];
+            throw new PDOException('Unable to load workflow runs: ' . $exception->getMessage(), 0, $exception);
         }
     }
 
@@ -143,7 +145,7 @@ class WorkflowRepository
                 'SELECT id, service_key, display_name, enabled, created_at FROM orchestration_services ORDER BY created_at'
             )->fetchAll();
         } catch (PDOException $exception) {
-            return [];
+            throw new PDOException('Unable to load orchestration services: ' . $exception->getMessage(), 0, $exception);
         }
     }
 
@@ -169,7 +171,7 @@ class WorkflowRepository
 
             return $workflows;
         } catch (PDOException $exception) {
-            return [];
+            throw new PDOException('Unable to load workflows: ' . $exception->getMessage(), 0, $exception);
         }
     }
 
@@ -190,7 +192,7 @@ class WorkflowRepository
 
             return $statement->rowCount() > 0;
         } catch (PDOException $exception) {
-            return false;
+            throw new PDOException('Unable to update orchestration service: ' . $exception->getMessage(), 0, $exception);
         }
     }
 
@@ -242,7 +244,7 @@ class WorkflowRepository
                 $database->rollBack();
             }
 
-            return false;
+            throw new PDOException('Unable to update workflow steps: ' . $exception->getMessage(), 0, $exception);
         }
     }
 
@@ -261,7 +263,43 @@ class WorkflowRepository
 
             return $statement->fetchAll();
         } catch (PDOException $exception) {
-            return [];
+            throw new PDOException('Unable to load workflow logs: ' . $exception->getMessage(), 0, $exception);
+        }
+    }
+
+    public function status(): array
+    {
+        $requiredTables = [
+            'orchestration_services',
+            'workflows',
+            'workflow_steps',
+            'workflow_runs',
+            'workflow_logs',
+        ];
+
+        if (!$this->canUseDatabase()) {
+            return [
+                'databaseConfigured' => false,
+                'databaseConnected' => false,
+                'missingTables' => $requiredTables,
+            ];
+        }
+
+        try {
+            $statement = $this->database()->prepare(
+                "SELECT table_name FROM information_schema.tables
+                 WHERE table_schema = 'public' AND table_name = ANY(:table_names)"
+            );
+            $statement->execute(['table_names' => '{' . implode(',', $requiredTables) . '}']);
+            $existingTables = array_column($statement->fetchAll(), 'table_name');
+
+            return [
+                'databaseConfigured' => true,
+                'databaseConnected' => true,
+                'missingTables' => array_values(array_diff($requiredTables, $existingTables)),
+            ];
+        } catch (PDOException $exception) {
+            throw new PDOException('Unable to check workflow database status: ' . $exception->getMessage(), 0, $exception);
         }
     }
 

@@ -40,11 +40,15 @@ class Orchestrator
         $workflowId = $steps[0]['workflow_id'] ?? null;
         $runId = $this->workflowRepository->startRun($workflowId);
         $analysis = null;
+        $currentServiceKey = null;
+        $currentStepOrder = 0;
 
         try {
             foreach ($steps as $step) {
                 $serviceKey = (string)$step['service_key'];
                 $stepOrder = (int)$step['step_order'];
+                $currentServiceKey = $serviceKey;
+                $currentStepOrder = $stepOrder;
                 $this->workflowRepository->logStep($runId, $serviceKey, $stepOrder, 'running');
 
                 if ($serviceKey === 'ai_analysis') {
@@ -71,6 +75,15 @@ class Orchestrator
 
             return $analysis;
         } catch (\Throwable $exception) {
+            if ($currentServiceKey !== null) {
+                $this->workflowRepository->logStep(
+                    $runId,
+                    $currentServiceKey,
+                    $currentStepOrder,
+                    'failed',
+                    $exception->getMessage()
+                );
+            }
             $this->workflowRepository->finishRun($runId, 'failed', $exception->getMessage());
             throw new RuntimeException(
                 sprintf('Orkestracija nije uspjela%s: %s', $runId ? ' (run ' . $runId . ')' : '', $exception->getMessage()),
