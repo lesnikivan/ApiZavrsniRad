@@ -7,10 +7,10 @@ class AIPlantAnalyzer
     private string $apiKey;
     private string $model;
 
-    public function __construct(string $apiKey = '', string $model = 'gemini-3.6-flash')
+    public function __construct(string $apiKey = '', string $model = 'gemini-3.5-flash')
     {
         $this->apiKey = $apiKey;
-        $this->model = $model ?: 'gemini-3.6-flash';
+        $this->model = $model ?: 'gemini-3.5-flash';
     }
 
     public function analyze(string $imageBase64, string $mimeType, string $imageUri = ''): array
@@ -46,7 +46,7 @@ class AIPlantAnalyzer
                 ],
             ]],
             'generationConfig' => [
-                'response_mime_type' => 'application/json',
+                'responseMimeType' => 'application/json',
                 'temperature' => 0.2,
             ],
         ];

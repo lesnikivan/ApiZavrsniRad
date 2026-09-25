@@ -24,7 +24,7 @@ $controller = new PlantController(
     new Orchestrator(
         new AIPlantAnalyzer(
             $env('GEMINI_API_KEY'),
-            $env('GEMINI_MODEL', 'gemini-3.6-flash')
+            $env('GEMINI_MODEL', 'gemini-3.5-flash')
         ),
         new TrelloService(
             $env('TRELLO_KEY'),
