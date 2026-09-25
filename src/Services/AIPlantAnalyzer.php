@@ -16,7 +16,7 @@ class AIPlantAnalyzer
     public function analyze(string $imageBase64, string $mimeType, string $imageUri = ''): array
     {
         if ($this->apiKey === '') {
-            return $this->demoAnalysis($imageUri);
+            throw new \RuntimeException('GEMINI_API_KEY nije postavljen.');
         }
 
         $prompt = implode("\n", [
@@ -62,7 +62,7 @@ class AIPlantAnalyzer
         $decoded = $this->decodeModelJson($text);
 
         if ($decoded === null) {
-            return $this->demoAnalysis($imageUri);
+            throw new \RuntimeException('Gemini API je vratio neispravan JSON odgovor.');
         }
 
         return $this->normalizeAnalysis($decoded, $imageUri);
@@ -83,7 +83,7 @@ class AIPlantAnalyzer
         }
 
         if (count($tasks) === 0) {
-            $tasks = $this->demoAnalysis($imageUri)['tasks'];
+            throw new \RuntimeException('AI odgovor ne sadrži zadatke njege biljke.');
         }
 
         return [
@@ -153,39 +153,4 @@ class AIPlantAnalyzer
         throw new \RuntimeException('Gemini API request failed after retries.');
     }
 
-    private function demoAnalysis(string $imageUri): array
-    {
-        return [
-            'id' => 'demo-' . time(),
-            'plantName' => 'Monstera deliciosa',
-            'scientificName' => 'Monstera deliciosa',
-            'confidence' => 0.91,
-            'imageUri' => $imageUri,
-            'summary' => 'Biljka voli jako indirektno svjetlo, umjereno zalijevanje i propusnu zemlju.',
-            'tasks' => [
-                [
-                    'id' => 'task-water',
-                    'title' => 'Zaliti biljku',
-                    'description' => 'Provjeri prvih nekoliko centimetara zemlje i zalij kada je suha.',
-                    'frequency' => 'Svaki 7. dan',
-                    'status' => 'planned',
-                ],
-                [
-                    'id' => 'task-clean',
-                    'title' => 'Obrisati listove',
-                    'description' => 'Ukloni prasinu vlaznom krpom kako bi listovi bolje upijali svjetlo.',
-                    'frequency' => 'Svaka 2 tjedna',
-                    'status' => 'planned',
-                ],
-                [
-                    'id' => 'task-fertilize',
-                    'title' => 'Dodati gnojivo',
-                    'description' => 'Koristi blago tekuce gnojivo u sezoni rasta.',
-                    'frequency' => 'Jednom mjesecno',
-                    'status' => 'planned',
-                ],
-            ],
-            'createdAt' => gmdate('c'),
-        ];
-    }
 }
