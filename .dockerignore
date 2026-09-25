@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+vendor/
+storage/
+.git/
+.gitignore
+.phpunit.result.cache
+.phpunit.cache/
+.vscode/
+.idea/
