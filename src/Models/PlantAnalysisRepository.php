@@ -33,7 +33,6 @@ class PlantAnalysisRepository
 
                 return $this->fromDatabaseRow((array)$statement->fetch());
             } catch (PDOException $exception) {
-                // Keep local development usable when the remote database is unavailable.
             }
         }
 
@@ -52,7 +51,6 @@ class PlantAnalysisRepository
 
                 return array_map([$this, 'fromDatabaseRow'], $statement->fetchAll());
             } catch (PDOException $exception) {
-                // Keep local development usable when the remote database is unavailable.
             }
         }
 
